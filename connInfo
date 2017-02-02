@@ -1,0 +1,160 @@
+Imports System.Data.OleDb
+
+'There will be an update with code for each text box to import Eye Fly's historical data regarding inventory and rental stauses. 
+'We hard coded "0" here For presentation purposes To show that it will work In the future.
+Public Class Reports
+    'variables for form load (no user input yet)
+    Dim selectedActor As String = ""
+    Dim selectedVideo As String = ""
+    Dim ConnInfo As DbConnection = New DbConnection
+    Dim ConnString As String = ConnInfo.GetConnString()
+
+    'variables for the data grid view
+    Dim ds As New DataSet
+    Dim oledbAdapter As OleDbDataAdapter
+
+    Dim con As New OleDbConnection
+
+    Private Sub Reports_Load(sender As Object, e As EventArgs) Handles MyBase.Load
+
+        LateFeeTotalTextBox.Text = "$1.50"
+        'Connects data to the movies report combo box
+        Try
+            Dim command As New OleDbCommand("SELECT TitleName FROM Title WHERE TitleType = 'Movie' ORDER BY TitleName asc;", con)
+            Dim dr As OleDbDataReader
+
+            con.ConnectionString = ConnString
+            con.Open()
+
+            dr = command.ExecuteReader()
+
+            While dr.Read()
+                MovieComboBox.Items.Add(Trim(dr.GetString(0)))
+            End While
+            con.Close()
+        Catch ex As Exception
+            MessageBox.Show("Error in retrieving list from database" & ex.Message, "Database Error")
+        End Try
+
+        'Connects data to the video game report combo box
+        Try
+            Dim command As New OleDbCommand("SELECT TitleName FROM Title WHERE TitleType = 'Game'  ORDER BY TitleName asc;", con)
+            Dim dr As OleDbDataReader
+
+            con.ConnectionString = ConnString
+            con.Open()
+
+            dr = command.ExecuteReader()
+
+            While dr.Read()
+                VideoGameComboBox.Items.Add(Trim(dr.GetString(0)))
+            End While
+            con.Close()
+        Catch ex As Exception
+            MessageBox.Show("Error in retrieving list from database" & ex.Message, "Database Error")
+        End Try
+
+        'Connects data to the customer profile report combo box
+        Try
+            Dim command As New OleDbCommand("SELECT CONCAT(CustomerFirstName,' ', CustomerLastName) FROM Customer ORDER BY CustomerLastName asc;", con)
+            Dim dr As OleDbDataReader
+            ' Dim customerinfo As List(Of String) = New List(Of String)
+
+            con.ConnectionString = ConnString
+            con.Open()
+
+            dr = command.ExecuteReader()
+
+            While dr.Read()
+                ' customerinfo.Add(CustomerProfileTextBox.Text)
+                CustomerComboBox.Items.Add(Trim(dr.GetString(0)))
+            End While
+            con.Close()
+        Catch ex As Exception
+            MessageBox.Show("Error in retrieving list from database" & ex.Message, "Database Error")
+        End Try
+
+        'Connects data to the overdue listbox
+        Try
+            Dim command As New OleDbCommand("SELECT t.TitleName
+                                             FROM Title t
+                                             JOIN Unit u
+                                             ON u.TitleID = t.TitleID
+                                             JOIN Rental r
+                                             ON r.RentalID = u.RentalID
+                                             WHERE r.ReturnDate > '11/9/16';", con) 'This is where Eye Fly's historical data regarding overdue item return dates will be imported
+            Dim dr As OleDbDataReader
+
+            con.ConnectionString = ConnString
+            con.Open()
+
+            dr = command.ExecuteReader()
+
+            While dr.Read()
+                OverdueItemsListBox.Items.Add(Trim(dr.GetString(0)))
+            End While
+            con.Close()
+        Catch ex As Exception
+            MessageBox.Show("Error in retrieving list from database" & ex.Message, "Database Error")
+        End Try
+
+        'Connects data to the Genre Inventory combobox
+        Try
+            Dim command As New OleDbCommand("SELECT GenreName FROM genre;", con)
+            Dim dr As OleDbDataReader
+
+            con.ConnectionString = ConnString
+            con.Open()
+
+            dr = command.ExecuteReader()
+
+            While dr.Read()
+                GenreInventoryComboBox.Items.Add(Trim(dr.GetString(0)))
+            End While
+            con.Close()
+        Catch ex As Exception
+            MessageBox.Show("Error in retrieving list from database" & ex.Message, "Database Error")
+        End Try
+
+    End Sub
+
+    Private Sub HomeToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles HomeToolStripMenuItem.Click
+        My.Forms.Home.Show()
+        Me.Hide()
+    End Sub
+
+    Private Sub ExitToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles ExitToolStripMenuItem.Click
+        Application.Exit()
+    End Sub
+
+    Private Sub Button1_Click(sender As Object, e As EventArgs) Handles Button1.Click
+        My.Forms.Customer_Info.Show()
+        Me.Hide()
+        'This is where code will go to validate that a customer has been selected
+    End Sub
+
+
+    'the following subs are for filling in the report. The zeros will be replaced with SQL to pull the given info needed
+    Private Sub MovieComboBox_SelectedIndexChanged(sender As Object, e As EventArgs) Handles MovieComboBox.SelectedIndexChanged
+        MovieInStockQuantityTextBox.Text = "0"
+        MovieRentedQtyTextBox.Text = "0"
+        MovieCheckOutTextBox.Text = "01/01/01"
+        MovieDueTextBox.Text = "01/01/01"
+    End Sub
+
+    Private Sub VideoGameComboBox_SelectedIndexChanged(sender As Object, e As EventArgs) Handles VideoGameComboBox.SelectedIndexChanged
+        GameInStockTextBox.Text = "0"
+        GameRentalQtyTextBox.Text = "0"
+        GameCheckOutTextBox.Text = "01/01/01"
+        GameDueTextBox.Text = "01/01/01"
+    End Sub
+
+    Private Sub GenreInventoryComboBox_SelectedIndexChanged(sender As Object, e As EventArgs) Handles GenreInventoryComboBox.SelectedIndexChanged
+        InventoryAmountTextBox.Text = "1"
+    End Sub
+
+    'Private Sub LateGroupBox_MouseMove(sender As Object, e As MouseEventArgs) Handles LateGroupBox.MouseMove
+    '    LateFeeTotalTextBox.Text = "$1.50"
+
+    'End Sub
+End Class
