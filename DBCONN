@@ -1,0 +1,11 @@
+Public Class DbConnection
+    Private Const username As String = "ISYS4283374"
+    Private Const password As String = "VP96xq$"
+    Private Const DBName As String = "ISYS4283374"
+
+    Private ConnString As String = "Provider=SQLNCLI11;Server=msenterprise.waltoncollege.uark.edu;Database=" & DBName & ";UID=" & username & ";PWD=" & password & ";"
+    Public Function GetConnString() As String
+        Return ConnString
+    End Function
+
+End Class
